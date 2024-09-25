@@ -56,4 +56,10 @@ dependencies {
     implementation ("com.squareup.picasso:picasso:2.8")
     // Add coroutine
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9")
+
+// ViewModel
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.0")
+// ViewModel utilities for Compose
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.0")
+// LiveData
 }

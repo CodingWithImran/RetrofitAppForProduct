@@ -4,20 +4,20 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.retrofitappforproduct.Adapters.MyAdapters
-import com.example.retrofitappforproduct.Modals.MyData
+import com.example.retrofitappforproduct.ApiCalling.ApiInterface
+import com.example.retrofitappforproduct.ApiCalling.RetrofitInstance
 import com.example.retrofitappforproduct.Modals.Product
 import com.example.retrofitappforproduct.databinding.ActivityMainBinding
-import com.google.gson.Gson
+import com.example.retrofitappforproduct.viewModal.ProductViewModal
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -30,14 +30,21 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
+       /* RetrofitInstance which now separated package
+
         val retrofitBuilder = Retrofit.Builder()
             .baseUrl("https://dummyjson.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ApiInterface::class.java)
-        // Below code work with Callback function
+            */
+        /* Now above code calls from separate Package */
+
+        /* Below code work with Callback function
                     // val AllListData = retrofitBuilder.getProductData()
                    // for auto used ctrl+shift+space
+
+                   */
            /*
                     AllListData.enqueue(object : Callback<MyData?> {
                         override fun onResponse(call: Call<MyData?>, response: Response<MyData?>) {
@@ -61,26 +68,38 @@ class MainActivity : AppCompatActivity() {
             */
 
     // Below code with coroutine
-    GlobalScope.launch (Dispatchers.IO){
-        try{
-            var myListData = retrofitBuilder.getProductData()
-            if(myListData.isSuccessful){
-                val  productList = myListData.body()?.products!!
-                productList.let {
-                    withContext(Dispatchers.Main){
-                        binding.recProduct.adapter = MyAdapters(this@MainActivity, productList)
-                        binding.recProduct.layoutManager = LinearLayoutManager(this@MainActivity)
-                    }
-                }
-            }else{
-                Toast.makeText(this@MainActivity, "Error is ", Toast.LENGTH_SHORT).show()
-            }
-        }catch (exception : Exception){
-            Log.d("Tag", "Exception")
+//    GlobalScope.launch (Dispatchers.IO){
+//        try{
+//            var myListData = RetrofitInstance.ApiInstance().getProductData()
+//            if(myListData.isSuccessful){
+//                val  productList = myListData.body()?.products!!
+//                productList.let {
+//                    withContext(Dispatchers.Main){
+//                        binding.recProduct.adapter = MyAdapters(this@MainActivity, productList)
+//                        binding.recProduct.layoutManager = LinearLayoutManager(this@MainActivity)
+//                    }
+//                }
+//            }else{
+//                Toast.makeText(this@MainActivity, "Error is ", Toast.LENGTH_SHORT).show()
+//            }
+//        }catch (exception : Exception){
+//            Log.d("Tag", "Exception")
+//        }
+//
+//    }
+        val myAdapters = MyAdapters(this@MainActivity, emptyList())
+
+
+//        Using Retrofit MVVM Architecture
+        val viewModal = ViewModelProvider(this).get(ProductViewModal::class.java)
+        viewModal.fetchData()
+        viewModal.productList.observe(this, Observer {listData ->
+            myAdapters.updateData(listData)
+        })
+        binding.recProduct.apply {
+            adapter = myAdapters
+            layoutManager = LinearLayoutManager(this@MainActivity)
         }
-
-    }
-
 
     }
 }
